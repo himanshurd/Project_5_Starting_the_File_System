@@ -24,6 +24,9 @@ mkfs.o: mkfs.c
 test: simfs_test
 	./simfs_test
 
+pack.o: pack.c
+	gcc -Wall -Wextra -c $<
+
 simfs_test: simfs_test.c simfs.a
 	gcc -Wall -Wextra -o $@ $^ -DCTEST_ENABLE 
 
