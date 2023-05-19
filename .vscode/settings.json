@@ -25,5 +25,6 @@
     "**/*"
   ],
   "C_Cpp_Runner.useAddressSanitizer": false,
-  "C_Cpp_Runner.showCompilationTime": false
+  "C_Cpp_Runner.showCompilationTime": false,
+  "C_Cpp.errorSquiggles": "disabled"
 }
