@@ -1,6 +1,6 @@
 .PHONY: test 
 
-simfs.a: free.o mkfs.o inode.o image.o block.o
+simfs.a: free.o mkfs.o inode.o image.o block.o	pack.o
 	ar rcs $@ $^
 
 mkfs: mkfs.o simfs.a

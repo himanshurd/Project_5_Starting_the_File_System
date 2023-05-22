@@ -8,7 +8,7 @@ static struct inode incore[MAX_SYS_OPEN_FILES] = {0};
 
 struct inode *ialloc(void)
 {
-    unsigned char inode_buffer[4096] = { 0 };
+    unsigned char inode_buffer[BLOCK_SIZE] = { 0 };
     int free_inode_num;
 
     bread(FREE_INODE_BLOCK_NUM, inode_buffer);
@@ -47,10 +47,8 @@ struct inode *find_incore_free(void) {
         if(incore[i].ref_count ==0){
             return &incore[i];
         }
-        else{
-            return NULL;
-        }
     }
+    return NULL;
 }
 
 struct inode *find_incore(unsigned int inode_num){
@@ -60,10 +58,8 @@ struct inode *find_incore(unsigned int inode_num){
                 return &incore[i];
             }
         }
-        else {
-            return NULL;
-        }
     }
+    return NULL;
 }
 
 void read_inode(struct inode *in, int inode_num){
@@ -137,4 +133,3 @@ void iput(struct inode *in){
         write_inode(in);
     }
 }
-

@@ -69,12 +69,36 @@ void find_set_free_preexisting(void){
 }
 
 void test_inode(void) {
-    image_open("test_inode", 1);
-    CTEST_ASSERT(ialloc() == 0, "Testing ialloc when the inode map is empty");
-    CTEST_ASSERT(ialloc() == 1, "Testing ialloc when the inode map already contains allocated inodes");
+    image_open("inode_test", 0);
+
+    struct inode *node = find_incore_free();
+    node->size = 5;
+    node->inode_num = 2;
+    node->ref_count = 1;
+    CTEST_ASSERT(find_incore(2)->size == 5, "Test to find_incore_ free and find_incore");
+
+    write_inode(node);
+    struct inode node2;
+    read_inode(&node2, 2);
+    CTEST_ASSERT(node2.size == 5, "Test for write inode and read inode");
+
+    CTEST_ASSERT(iget(2)->size == 5, "Test iget for node in core");
+
+    struct inode* node3 = iget(3);
+    CTEST_ASSERT(find_incore(3)->ref_count == 1, "Test when iget for node is not in core");
+
+    iget(3);
+    iput(node3);
+    CTEST_ASSERT(node3->ref_count == 1, "Test iput for ref_count less than 1");
+
+    node3->size = 6;
+    iput(node3);
+    struct inode node4;
+    read_inode(&node4, 3);
+    CTEST_ASSERT(node4.size == 6, "Test iput for ref_count equal to 1");
+
     image_close();
 }
-
 
 int main() 
 {
@@ -85,5 +109,6 @@ int main()
     test_block();
     test_block_overwriting();
     test_inode();
+    // test_inode_1();
     test_mkfs();
 }
