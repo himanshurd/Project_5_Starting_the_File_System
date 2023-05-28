@@ -11,7 +11,8 @@
 
 void mkfs(void){
     for(int i=0; i < NUMBER_OF_BLOCKS; i++){
-        bwrite(0,0);
+        unsigned char block[4096] = {0};
+        write(image_fd, block, sizeof(block));
     }
     for(int i=0; i < 7; i++){
         alloc();

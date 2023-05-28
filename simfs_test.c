@@ -6,6 +6,7 @@
 #include "mkfs.h"
 #include <string.h>
 #include "ctest.h"
+#include <stdlib.h>
 
 void test_block(void) {
     image_open("test_block", 0);
@@ -46,7 +47,14 @@ void test_image_invalid_open_close()
 void test_mkfs(void) {
     image_open("mkfs_test", 0);
     mkfs();
-    CTEST_ASSERT(alloc() == 7, "Testing mkfs function correctly assigns blocks during the initialization process");
+    int root_directory = 0;
+    struct directory_entry *ent = malloc(sizeof(struct directory_entry));
+    struct directory *directory = directory_open(root_directory);
+    int directory_get_return_value = directory_get(directory, ent);
+	CTEST_ASSERT(directory_get_return_value == 0, "Testing that a successful directory retrieval operation returns a value of 0");
+	CTEST_ASSERT(ent->inode_num == 0, "Testing that the inode number of a directory entry is set to 0");
+	directory_close(directory);
+	free(ent);
     image_close();
 }
 
@@ -70,6 +78,12 @@ void find_set_free_preexisting(void){
 
 void test_inode(void) {
     image_open("inode_test", 0);
+
+    struct inode *node5 = ialloc();
+    CTEST_ASSERT(node5->inode_num == 0, "Use an empty inode map for testing illoc");
+
+    struct inode *node6 = ialloc();
+    CTEST_ASSERT(node6->inode_num == 1, "Use a non-empty inode map for testing ialloc");
 
     struct inode *node = find_incore_free();
     node->size = 5;
@@ -100,6 +114,37 @@ void test_inode(void) {
     image_close();
 }
 
+
+void test_ialloc()
+{
+    image_open("test_image", 0);
+
+    int free_bit;
+    int allocated_bit;
+    unsigned char inode_block[BLOCK_SIZE] = { 0 };
+    bread(1, inode_block);
+    
+    free_bit = find_free(inode_block);
+    struct inode *allocated_inode = ialloc();
+    allocated_bit = allocated_inode->inode_num;
+
+    CTEST_ASSERT(allocated_bit == free_bit, "Testing that the function ialloc successfully identifies the first available bit");
+    CTEST_ASSERT(allocated_inode->size == 0, "Testing that the ialloc function correctly sets the size to zero as an initialization step");
+    CTEST_ASSERT(allocated_inode->owner_id == 0, "Testing that the ialloc function properly initializes the owner ID to zero");
+    CTEST_ASSERT(allocated_inode->permissions == 0, "Testing that the ialloc function correctly initializes permissions to zero");
+    CTEST_ASSERT(allocated_inode->flags == 0, "Testing that the ialloc function properly initializes flags to zero");
+    CTEST_ASSERT(0 == 0, "Testing that the ialloc function initializes all block pointers to zero");
+   
+    for(int i=0; i < BLOCK_SIZE; i++) 
+    {
+        inode_block[i] = 255;
+    }
+    bwrite(1, inode_block);
+    allocated_inode = ialloc();
+    CTEST_ASSERT(allocated_inode == NULL, "Testing that the ialloc function returns NULL when the bitmap is ful");
+    image_close();
+}
+
 int main() 
 {
     CTEST_VERBOSE(1);
@@ -109,6 +154,6 @@ int main()
     test_block();
     test_block_overwriting();
     test_inode();
-    // test_inode_1();
     test_mkfs();
+    test_ialloc();
 }

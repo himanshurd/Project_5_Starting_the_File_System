@@ -21,6 +21,9 @@ free.o: free.c
 mkfs.o: mkfs.c
 	gcc -Wall -Wextra -c $<
 
+ls.o: ls.c
+	gcc -Wall -Wextra -c $<
+
 test: simfs_test
 	./simfs_test
 
@@ -31,4 +34,4 @@ simfs_test: simfs_test.c simfs.a
 	gcc -Wall -Wextra -o $@ $^ -DCTEST_ENABLE 
 
 clean: 
-	rm -f *.a *.o inode_test test_block test_image test_invalid_image test_block test_block_overwriting test_inode mkfs_test simfs_test
+	rm -f *.a *.o *_test test_block test_image test_invalid_image test_block test_block_overwriting test_inode
