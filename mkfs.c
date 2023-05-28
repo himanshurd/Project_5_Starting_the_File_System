@@ -19,13 +19,13 @@ void mkfs(void){
     struct inode *root_node = ialloc();
     int root_block = alloc();
     root_node->block_ptr[0] = root_block;
-    root_node->flags = 2;
-    root_node->size = 32*2;
+    root_node->flags = DIRECTORY_FLAG;
+    root_node->size = DIRECTORY_START_SIZE;
     unsigned char block[BLOCK_SIZE];
     write_u16(block, root_node->inode_num);
-    strcpy((char*)block+2, ".");
-    write_u16(block+32, root_node->inode_num);
-    strcpy((char*)block+2+32, "..");   
+    strcpy((char*)block+FILE_NAME_OFFSET, ".");
+    write_u16(block+DIRECTORY_ENTRY_LENGTH, root_node->inode_num);
+    strcpy((char*)block+FILE_NAME_OFFSET+DIRECTORY_ENTRY_LENGTH, "..");   
     bwrite(root_node->inode_num, block);
     iput(root_node);
 }
@@ -47,7 +47,7 @@ int directory_get(struct directory *dir, struct directory_entry *ent)
         return -1;
     }
 
-    int data_block_index = dir->offset / 4096;
+    int data_block_index = dir->offset / BLOCK_SIZE;
     int data_block_num = dir->inode->block_ptr[data_block_index];
 
     unsigned char block[BLOCK_SIZE];
@@ -55,8 +55,8 @@ int directory_get(struct directory *dir, struct directory_entry *ent)
 
     int offset_in_block = dir->offset % BLOCK_SIZE;
     ent->inode_num = read_u16(block + offset_in_block);
-    strcpy(ent->name, (char *)block + 2);
-    dir->offset += 32;
+    strcpy(ent->name, (char *)block + FILE_NAME_OFFSET);
+    dir->offset += DIRECTORY_ENTRY_LENGTH;
 
     return 0;
 }

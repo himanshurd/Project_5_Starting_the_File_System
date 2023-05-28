@@ -3,6 +3,11 @@
 
 #define NUMBER_OF_BLOCKS 1024
 
+#define DIRECTORY_ENTRY_LENGTH 32
+#define DIRECTORY_FLAG 2
+#define DIRECTORY_START_SIZE DIRECTORY_ENTRY_LENGTH*2
+#define FILE_NAME_OFFSET 2
+
 void mkfs(void);
 
 struct directory {
