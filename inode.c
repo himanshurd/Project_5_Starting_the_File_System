@@ -142,3 +142,4 @@ struct inode *namei(char *path){
     }
     return NULL;
 }
+
