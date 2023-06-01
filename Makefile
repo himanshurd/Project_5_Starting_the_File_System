@@ -1,6 +1,6 @@
 .PHONY: test 
 
-simfs.a: free.o mkfs.o inode.o image.o block.o	pack.o
+simfs.a: free.o mkfs.o inode.o image.o block.o	pack.o dirbasename.o
 	ar rcs $@ $^
 
 mkfs: mkfs.o simfs.a
@@ -28,6 +28,9 @@ test: simfs_test
 	./simfs_test
 
 pack.o: pack.c
+	gcc -Wall -Wextra -c $<
+
+dirbaseman.o: dirbaseman.c
 	gcc -Wall -Wextra -c $<
 
 simfs_test: simfs_test.c simfs.a

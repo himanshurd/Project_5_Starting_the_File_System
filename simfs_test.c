@@ -6,6 +6,7 @@
 #include "mkfs.h"
 #include <string.h>
 #include "ctest.h"
+#include "dirbasename.h"
 #include <stdlib.h>
 
 void test_block(void) {
@@ -111,6 +112,17 @@ void test_inode(void) {
     read_inode(&node4, 3);
     CTEST_ASSERT(node4.size == 6, "Test iput for ref_count equal to 1");
 
+    struct inode *in = namei("/");
+    struct directory *dir;
+    struct directory_entry ent;
+    directory_make("/NewDirectory");
+    dir = directory_open(0);
+    directory_get(dir, &ent);
+    directory_get(dir, &ent);
+    CTEST_ASSERT(in->inode_num == 0, "The root directory is being tested with namei");
+    CTEST_ASSERT(strcmp(ent.name, "NewDirectory") == 0, "Creating a directory is tested by directory_make");
+    directory_close(dir);
+    
     image_close();
 }
 

@@ -15,6 +15,7 @@
 #define ROOT_INODE_NUM 0
 #define PATH_LENGTH 1024
 #define DIRECTORY_ENTRIES_PER_BLOCK 128
+
 struct inode {
     unsigned int size;
     unsigned short owner_id;
@@ -33,4 +34,6 @@ void write_inode(struct inode *in);
 struct inode *iget(int inode_num);
 void iput(struct inode *in);
 struct inode *ialloc(void);
+struct inode *namei(char *path);
+int directory_make(char *path);
 #endif
