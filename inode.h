@@ -13,7 +13,8 @@
 #define INODE_PTR_COUNT 16
 
 #define ROOT_INODE_NUM 0
-
+#define PATH_LENGTH 1024
+#define DIRECTORY_ENTRIES_PER_BLOCK 128
 struct inode {
     unsigned int size;
     unsigned short owner_id;

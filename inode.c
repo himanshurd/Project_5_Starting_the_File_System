@@ -4,6 +4,8 @@
 #include "pack.h"
 #include <stddef.h>
 #include <string.h>
+#include "mkfs.h"
+#include "dirbasename.h"
 
 static struct inode incore[MAX_SYS_OPEN_FILES] = {0};
 
@@ -143,3 +145,43 @@ struct inode *namei(char *path){
     return NULL;
 }
 
+
+int directory_make(char *path) {
+
+    char dirname[PATH_LENGTH];
+    get_dirname(path, dirname);
+
+    char basename[PATH_LENGTH];
+    get_basename(path, basename);
+  
+    struct inode* parent_dir = namei(dirname);
+    struct inode* new_inode = ialloc();
+    int new_dir_block = alloc();
+
+    unsigned char block[BLOCK_SIZE];
+    write_u16(block, new_inode->inode_num);
+    strcpy((char*)block+FILE_NAME_OFFSET, ".");
+    write_u16(block+DIRECTORY_ENTRY_LENGTH, parent_dir->inode_num);
+    strcpy((char*)block+FILE_NAME_OFFSET+DIRECTORY_ENTRY_LENGTH, "..");
+    
+    new_inode->block_ptr[0] = new_dir_block;
+    new_inode->flags = DIRECTORY_FLAG;
+    new_inode->size = DIRECTORY_START_SIZE;
+    bwrite(new_inode->inode_num, block);
+    
+    int numitems = parent_dir->size/DIRECTORY_ENTRY_LENGTH;
+    int parent_block_num = numitems/DIRECTORY_ENTRIES_PER_BLOCK;
+    unsigned char parentblock[BLOCK_SIZE];
+    bread(parent_dir->block_ptr[parent_block_num], parentblock);
+
+    write_u16(parentblock+(DIRECTORY_ENTRY_LENGTH*(numitems%DIRECTORY_ENTRIES_PER_BLOCK)), new_inode->inode_num);
+    strcpy((char*)parentblock+FILE_NAME_OFFSET+(DIRECTORY_ENTRY_LENGTH*(numitems%128)), basename);
+
+    bwrite(parent_dir->block_ptr[parent_block_num], parentblock);
+    parent_dir->size += DIRECTORY_ENTRY_LENGTH;
+
+    iput(parent_dir);
+    iput(new_inode);
+
+    return 0;
+}
